@@ -1,0 +1,14 @@
+[Unit]
+Description=Rotate site backups (example)
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=BACKUP_SRC=/var/www/site
+Environment=BACKUP_DST=/var/backups/site
+Environment=RETAIN_DAYS=14
+Environment=BACKUP_NAME=site
+ExecStart=/usr/local/bin/rotate-backups.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

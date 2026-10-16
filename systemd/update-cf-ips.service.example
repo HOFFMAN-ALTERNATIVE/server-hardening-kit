@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh Cloudflare real_ip ranges (example)
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=OUT=/etc/nginx/cloudflare-ips.conf
+ExecStart=/usr/local/bin/update-cloudflare-ips.sh
+ExecStartPost=/usr/sbin/nginx -t
+ExecStartPost=/bin/systemctl reload nginx

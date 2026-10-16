@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic flood watch (example)
+
+[Timer]
+OnUnitActiveSec=45s
+AccuracySec=5s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

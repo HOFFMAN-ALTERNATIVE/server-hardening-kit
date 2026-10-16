@@ -1,0 +1,16 @@
+# Example compose for a static site container (host networking optional).
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.static
+    # Prefer binding only to loopback or a private interface in production.
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+    volumes:
+      - ../public:/usr/share/nginx/html:ro
