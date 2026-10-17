@@ -1,16 +1,17 @@
-# Example compose for a static site container (host networking optional).
+# Example compose for the static-site container.
 services:
   web:
     build:
       context: ..
       dockerfile: docker/Dockerfile.static
-    # Prefer binding only to loopback or a private interface in production.
+    # Bind to loopback or a private interface; let the edge proxy face the internet.
     ports:
       - "127.0.0.1:8080:8080"
     restart: unless-stopped
     read_only: true
     tmpfs:
-      - /var/cache/nginx
-      - /var/run
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     volumes:
-      - ../public:/usr/share/nginx/html:ro
+      - ./public:/usr/share/nginx/html:ro

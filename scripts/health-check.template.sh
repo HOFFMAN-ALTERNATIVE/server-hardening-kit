@@ -10,6 +10,7 @@ for u in $URLS; do code=$(curl -s -o /dev/null -m 10 -w '%{http_code}' "$u" || e
 disk=$(df --output=pcent / | tail -1 | tr -dc 0-9); (( disk > 90 )) && fail+=("disk ${disk}%")
 if ((${#fail[@]})); then
   msg="⚠️ $(hostname): $(printf '%s; ' "${fail[@]}")"
-  curl -s -m 10 "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" -d chat_id="$TG_CHAT" --data-urlencode text="$msg" >/dev/null
+  printf 'url = "https://api.telegram.org/bot%s/sendMessage"\n' "$TG_TOKEN" \
+    | curl -s -m 10 -K - -d chat_id="$TG_CHAT" --data-urlencode text="$msg" >/dev/null
   exit 1
 fi

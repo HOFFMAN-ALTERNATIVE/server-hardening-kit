@@ -7,9 +7,33 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run ShellCheck
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
           shellcheck --version
           shellcheck scripts/*.sh
+
+  static-container:
+    name: static container (build, nginx -t, healthcheck, non-root)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build -f docker/Dockerfile.static -t static-site .
+      - name: nginx -t
+        run: docker run --rm static-site nginx -t
+      - name: run read-only and probe
+        run: |
+          docker run -d --name web --read-only --tmpfs /tmp --cap-drop ALL \
+            --security-opt no-new-privileges -p 127.0.0.1:8080:8080 static-site
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8080/ | grep -q "static site"
+          curl -fsSI http://127.0.0.1:8080/ | grep -qi "x-content-type-options: nosniff"
+          test "$(docker exec web id -u)" != "0"
+          for i in $(seq 1 30); do
+            s=$(docker inspect -f '{{.State.Health.Status}}' web); [ "$s" = healthy ] && break; sleep 2
+          done
+          test "$(docker inspect -f '{{.State.Health.Status}}' web)" = healthy
+      - name: logs
+        if: always()
+        run: docker logs web || true

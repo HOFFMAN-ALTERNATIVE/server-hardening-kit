@@ -1,10 +1,12 @@
-# Minimal static site on nginx:alpine
-FROM nginx:alpine
+# Minimal static site. nginx-unprivileged runs master and workers as uid 101,
+# listens on 8080 and keeps its pid and temp files under /tmp, so the container
+# works with a read-only root filesystem and a tmpfs on /tmp.
+FROM nginxinc/nginx-unprivileged:1.30-alpine
 
-COPY nginx/site.example.conf /etc/nginx/conf.d/default.conf
-COPY public/ /usr/share/nginx/html/
+COPY docker/static.conf /etc/nginx/conf.d/default.conf
+COPY docker/public/ /usr/share/nginx/html/
 
-# Drop privileges are handled by the official image's nginx master/worker model.
+USER 101
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
   CMD wget -qO- http://127.0.0.1:8080/healthz || exit 1

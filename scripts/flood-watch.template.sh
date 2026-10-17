@@ -48,11 +48,13 @@ if [ "$signals" -lt 2 ]; then
   exit 0
 fi
 
-msg="ALERT: possible flood on $(hostname) — req_tail=${req_rate} conns=${conns} load1=${load1} err=${err_count}"
+msg="ALERT: possible flood on $(hostname): req_tail=${req_rate} conns=${conns} load1=${load1} err=${err_count}"
 echo "$msg"
 
 if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
-  curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+  # token goes through a curl config on stdin so it stays out of `ps`
+  printf 'url = "https://api.telegram.org/bot%s/sendMessage"\n' "$TELEGRAM_BOT_TOKEN" \
+    | curl -fsS -m 10 -K - -X POST \
     -d "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "text=${msg}" >/dev/null || true
 fi
