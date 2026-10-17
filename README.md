@@ -52,6 +52,15 @@ Alerting scripts read credentials from the environment or an env file (for examp
 - Every script passes ShellCheck (`shellcheck scripts/*.sh`), enforced in [CI](.github/workflows/shellcheck.yml).
 - `update-cloudflare-ips.sh` only replaces the allowlist when both lists download and every line is a valid CIDR.
 
+## Design decisions
+
+- [ADR 0001](docs/adr/0001-templates-not-config-management.md): templates with `YOUR_*`
+  placeholders instead of an Ansible role, so nothing site-specific lives in the repo.
+- [ADR 0002](docs/adr/0002-validated-cloudflare-real-ip-list.md): the real-IP allowlist is
+  regenerated from Cloudflare's lists and only replaced when the download validates.
+- [ADR 0003](docs/adr/0003-unprivileged-readonly-static-container.md): static sites run on
+  `nginx-unprivileged`, read-only, with all capabilities dropped.
+
 ## Limits
 
 - Debian and Ubuntu with systemd and nginx are assumed.
